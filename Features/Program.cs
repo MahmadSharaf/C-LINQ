@@ -24,13 +24,43 @@ namespace Features
                 new Employee { Id = 3, Name = "Alex"}
             };
 
-            IEnumerator<Employee> enumerator = sales.GetEnumerator();
+            
 
             // This uses extension method implemented in features namespace
             Console.WriteLine(developers.Count());
+
+            // using GetEnumerator to iterate through IEnumerable variable
+            IEnumerator<Employee> enumerator = sales.GetEnumerator();
             while (enumerator.MoveNext())
             {
                 Console.WriteLine(enumerator.Current.Name);
+            }
+
+            // Using lambda expression
+            foreach (var employee in developers.Where( e => e.Name.StartsWith("S")))
+            {
+                Console.WriteLine("Start with 'S': " + employee.Name);
+            }
+
+            //Queries
+            Console.WriteLine("****Queries****");
+            // Using method syntax
+            var query1 = developers.Where(e => e.Name.Length == 5).OrderBy(e => e.Name);
+            // Using SQL-like sytax
+            var query2 = from developer in developers
+                         where developer.Name.Length == 5
+                         orderby developer.Name
+                         select developer;
+
+            foreach (var employee in query1)
+            {
+                Console.WriteLine(employee.Name);
+
+            }
+            foreach (var employee in query2)
+            {
+                Console.WriteLine(employee.Name);
+
             }
         }
     }
@@ -48,3 +78,10 @@ namespace Features
 
 //? Extesnion Methods:
 //! allow implementing functionality against interface type definition without changing that underlying type,  
+
+//? var:
+//! The complier inferes the type of the variable.
+//  It can be used anywhere except:
+//! *Defining parameters to a method.
+//! *Defining a field of a class.
+//! *Unintialized variables
