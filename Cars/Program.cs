@@ -14,6 +14,24 @@ namespace Cars
             var cars         = ProcessCars         ( "fuel.csv"         ) ; 
             var manufacturers = ProcessManufactures ("manufacturers.csv") ;
 
+            // GROUP
+            var querySyntax_group = from car in cars
+                                    group car by car.Manufacturer.ToUpper() into x
+                                    orderby x.Key
+                                    select x;
+
+            var extensionSyntax_group = cars.GroupBy(c => c.Manufacturer.ToUpper()).OrderBy(x => x.Key);
+
+            foreach (var group in extensionSyntax_group)
+            {
+                Console.WriteLine(group.Key);
+                foreach (var car in group.OrderByDescending(c => c.Combined).Take(2))
+                {
+                    Console.WriteLine($"\t{ car.Name} : { car.Combined}");
+                }
+            }
+
+            // JOIN
             var querySyntax = from car in cars
                               join manufacturer in manufacturers 
                               on new { car.Manufacturer, car.Year} 
@@ -38,10 +56,10 @@ namespace Cars
                                         .OrderByDescending(x => x.Combined)
                                         .ThenBy           (x => x.Name);
 
-            foreach (var item in extensionSyntax.Take(10))
-            {
-                Console.WriteLine($"{item.Headquarters} : {item.Name} :  {item.Combined}");
-            }
+            //foreach (var item in extensionSyntax.Take(10))
+            //{
+            //    Console.WriteLine($"{item.Headquarters} : {item.Name} :  {item.Combined}");
+            //}
 
 
 
