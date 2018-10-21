@@ -23,23 +23,33 @@ namespace Cars
                                         {
                                             Manufacturer = manufacturer,
                                             Cars = carGroup
-                                        }   ;
+                                        } into results
+                                        group results by results.Manufacturer.Headquarters;
 
             var extensionSyntax_groupjoin = manufacturers.GroupJoin(cars,
                                                                     m => m.Name,
                                                                     c => c.Manufacturer,
                                                                     (m, c) => new
                                                                     { Manufacturer = m, Cars = c })
-                                                         .OrderBy(m => m.Manufacturer.Name);
+                                                         //x .OrderBy(m => m.Manufacturer.Name);
+                                                         .GroupBy(m => m.Manufacturer.Headquarters);
 
             foreach (var group in extensionSyntax_groupjoin)
             {
-                Console.WriteLine($"{group.Manufacturer.Name} : {group.Manufacturer.Headquarters}");
-                foreach (var car in group.Cars.OrderByDescending(c => c.Combined).Take(2))
+                Console.WriteLine($"{group.Key}");
+                foreach (var car in group.SelectMany(g => g.Cars).OrderByDescending(c => c.Combined).Take(3))
                 {
                     Console.WriteLine($"\t{ car.Name} : { car.Combined}");
                 }
             }
+            //x foreach (var group in extensionSyntax_groupjoin)
+            //x {
+            //x     Console.WriteLine($"{group.Manufacturer.Name} : {group.Manufacturer.Headquarters}");
+            //x     foreach (var car in group.Cars.OrderByDescending(c => c.Combined).Take(2))
+            //x     {
+            //x         Console.WriteLine($"\t{ car.Name} : { car.Combined}");
+            //x     }
+            //x }
 
             // GROUP
             var querySyntax_group = from car in cars
