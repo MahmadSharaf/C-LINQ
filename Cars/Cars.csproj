@@ -45,6 +45,8 @@
   <ItemGroup>
     <Compile Include="CarExtensions.cs" />
     <Compile Include="Cars.cs" />
+    <Compile Include="Manufacturer.cs" />
+    <Compile Include="ManufacturerExtension.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -53,7 +55,9 @@
     <None Include="fuel.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="manufacturers.csv" />
+    <None Include="manufacturers.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
