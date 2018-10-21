@@ -14,6 +14,33 @@ namespace Cars
             var cars         = ProcessCars         ( "fuel.csv"         ) ; 
             var manufacturers = ProcessManufactures ("manufacturers.csv") ;
 
+            // GROUPJOIN
+
+            var querySyntax_groupjoin = from manufacturer in manufacturers
+                                        join car in cars on manufacturer.Name equals car.Manufacturer into carGroup
+                                        orderby manufacturer.Name
+                                        select new
+                                        {
+                                            Manufacturer = manufacturer,
+                                            Cars = carGroup
+                                        }   ;
+
+            var extensionSyntax_groupjoin = manufacturers.GroupJoin(cars,
+                                                                    m => m.Name,
+                                                                    c => c.Manufacturer,
+                                                                    (m, c) => new
+                                                                    { Manufacturer = m, Cars = c })
+                                                         .OrderBy(m => m.Manufacturer.Name);
+
+            foreach (var group in extensionSyntax_groupjoin)
+            {
+                Console.WriteLine($"{group.Manufacturer.Name} : {group.Manufacturer.Headquarters}");
+                foreach (var car in group.Cars.OrderByDescending(c => c.Combined).Take(2))
+                {
+                    Console.WriteLine($"\t{ car.Name} : { car.Combined}");
+                }
+            }
+
             // GROUP
             var querySyntax_group = from car in cars
                                     group car by car.Manufacturer.ToUpper() into x
@@ -22,14 +49,14 @@ namespace Cars
 
             var extensionSyntax_group = cars.GroupBy(c => c.Manufacturer.ToUpper()).OrderBy(x => x.Key);
 
-            foreach (var group in extensionSyntax_group)
-            {
-                Console.WriteLine(group.Key);
-                foreach (var car in group.OrderByDescending(c => c.Combined).Take(2))
-                {
-                    Console.WriteLine($"\t{ car.Name} : { car.Combined}");
-                }
-            }
+            //foreach (var group in extensionSyntax_group)
+            //{
+            //    Console.WriteLine(group.Key);
+            //    foreach (var car in group.OrderByDescending(c => c.Combined).Take(2))
+            //    {
+            //        Console.WriteLine($"\t{ car.Name} : { car.Combined}");
+            //    }
+            //}
 
             // JOIN
             var querySyntax = from car in cars
