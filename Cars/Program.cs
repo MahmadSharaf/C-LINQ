@@ -11,8 +11,46 @@ namespace Cars
     {
         static void Main(string[] args)
         {
-            var cars         = ProcessCars         ( "fuel.csv"         ) ; 
-            var manufacturers = ProcessManufactures ("manufacturers.csv") ;
+            var cars          = ProcessCars         ( "fuel.csv"          ) ; 
+            var manufacturers = ProcessManufactures ( "manufacturers.csv" ) ;
+
+            // AGGREGATING
+
+            var querySyntax_aggregating = from car2 in cars
+                                          group car2 by car2.Manufacturer into carGroup
+                                          select new
+                                          {
+                                              Name = carGroup.Key,
+                                              Max = carGroup.Max(c => c.Combined),
+                                              Min = carGroup.Min(c => c.Combined),
+                                              Avg = carGroup.Average(c => c.Combined)
+                                          } into agg
+                                          orderby agg.Max descending
+                                          select agg;
+
+            var extensionSyntax_aggregating = cars.GroupBy(c => c.Manufacturer).Select(g =>
+                                              {
+                                                  var results = g.Aggregate(new CarStatistics(),
+                                                                              (acc, c) => acc.Accumlate(c),
+                                                                              acc => acc.Compute());
+                                                  return new
+                                                  {
+                                                      Name = g.Key,
+                                                      Avg = results.Avg,
+                                                      Min = results.Min,
+                                                      Max = results.Max
+                                                  };
+                                              })
+                                              .OrderByDescending(r => r.Max);
+
+
+            foreach (var item in extensionSyntax_aggregating)
+            {
+                Console.WriteLine(item.Name);
+                Console.WriteLine($"\t Max: {item.Max}");
+                Console.WriteLine($"\t Min: {item.Min}");
+                Console.WriteLine($"\t Avg: {item.Avg}");
+            }
 
             // GROUPJOIN
 
@@ -21,8 +59,8 @@ namespace Cars
                                         orderby manufacturer.Name
                                         select new
                                         {
-                                            Manufacturer = manufacturer,
-                                            Cars = carGroup
+                                            Manufacturer = manufacturer , 
+                                            Cars         = carGroup       
                                         } into results
                                         group results by results.Manufacturer.Headquarters;
 
@@ -34,14 +72,14 @@ namespace Cars
                                                          //x .OrderBy(m => m.Manufacturer.Name);
                                                          .GroupBy(m => m.Manufacturer.Headquarters);
 
-            foreach (var group in extensionSyntax_groupjoin)
-            {
-                Console.WriteLine($"{group.Key}");
-                foreach (var car in group.SelectMany(g => g.Cars).OrderByDescending(c => c.Combined).Take(3))
-                {
-                    Console.WriteLine($"\t{ car.Name} : { car.Combined}");
-                }
-            }
+            //foreach (var group in extensionSyntax_groupjoin)
+            //{
+            //    Console.WriteLine($"{group.Key}");
+            //    foreach (var car in group.SelectMany(g => g.Cars).OrderByDescending(c => c.Combined).Take(3))
+            //    {
+            //        Console.WriteLine($"\t{ car.Name} : { car.Combined}");
+            //    }
+            //}
             //x foreach (var group in extensionSyntax_groupjoin)
             //x {
             //x     Console.WriteLine($"{group.Manufacturer.Name} : {group.Manufacturer.Headquarters}");
@@ -69,7 +107,7 @@ namespace Cars
             //}
 
             // JOIN
-            var querySyntax = from car in cars
+            var querySyntax_join = from car in cars
                               join manufacturer in manufacturers 
                               on new { car.Manufacturer, car.Year} 
                               equals new { Manufacturer = manufacturer.Name,manufacturer.Year}
@@ -81,7 +119,7 @@ namespace Cars
                                   car.Combined
                               };
 
-            var extensionSyntax = cars.Join(manufacturers,                                // The inner join data
+            var extensionSyntax_join = cars.Join(manufacturers,                                // The inner join data
                                             c => new { c.Manufacturer, c.Year },          // outerKeySelector
                                             m => new { Manufacturer = m.Name, m.Year },   // innerKeySelector
                                             (c, m) => new                                 // result data selector
@@ -93,7 +131,7 @@ namespace Cars
                                         .OrderByDescending(x => x.Combined)
                                         .ThenBy           (x => x.Name);
 
-            //foreach (var item in extensionSyntax.Take(10))
+            //foreach (var item in extensionSyntax_join.Take(10))
             //{
             //    Console.WriteLine($"{item.Headquarters} : {item.Name} :  {item.Combined}");
             //}
