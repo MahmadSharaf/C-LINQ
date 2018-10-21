@@ -12,7 +12,46 @@ namespace Cars
         static void Main(string[] args)
         {
             var cars         = ProcessCars         ( "fuel.csv"         ) ; 
-            var manufactures = ProcessManufactures ("manufacturers.csv") ;     
+            var manufacturers = ProcessManufactures ("manufacturers.csv") ;
+
+            var querySyntax = from car in cars
+                              join manufacturer in manufacturers 
+                              on new { car.Manufacturer, car.Year} 
+                              equals new { Manufacturer = manufacturer.Name,manufacturer.Year}
+                              orderby car.Combined descending, car.Name ascending
+                              select new
+                              {
+                                  manufacturer.Headquarters,
+                                  car.Name,
+                                  car.Combined
+                              };
+
+            var extensionSyntax = cars.Join(manufacturers,                                // The inner join data
+                                            c => new { c.Manufacturer, c.Year },          // outerKeySelector
+                                            m => new { Manufacturer = m.Name, m.Year },   // innerKeySelector
+                                            (c, m) => new                                 // result data selector
+                                            {
+                                                m.Headquarters,
+                                                c.Name,
+                                                c.Combined
+                                            })
+                                        .OrderByDescending(x => x.Combined)
+                                        .ThenBy           (x => x.Name);
+
+            foreach (var item in extensionSyntax.Take(10))
+            {
+                Console.WriteLine($"{item.Headquarters} : {item.Name} :  {item.Combined}");
+            }
+
+
+
+
+
+
+
+
+
+
 
             var topEfficient = cars.OrderByDescending(c => c.Combined)     //Order by can not be used more than once, while then by
                             .ThenBy(c => c.Name)                           //is used instead and then by can be used as much as needed
@@ -39,11 +78,7 @@ namespace Cars
             {
                 //Console.WriteLine(item); 
             }
-
-            foreach (var item in manufactures.Take(10))
-            {
-                Console.WriteLine(item.Name);
-            }
+                        
         }
 
         private static List<Manufacturer> ProcessManufactures(string path)
